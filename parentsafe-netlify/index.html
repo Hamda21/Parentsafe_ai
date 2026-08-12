@@ -163,6 +163,19 @@ html
     display: none;
   }
   .mic-hint.show { display: block; }
+  .speaker-toggle {
+    background: none;
+    border: none;
+    color: #fff;
+    opacity: 0.9;
+    cursor: pointer;
+    font-size: 16px;
+    float: right;
+    margin-top: -2px;
+  }
+  .speaker-toggle.muted {
+    opacity: 0.5;
+  }
 </style>
 </head>
 <body>
@@ -170,10 +183,11 @@ html
 <div class="chat-container">
   <div class="chat-header">
     ParentSafe AI Assistant
+    <button class="speaker-toggle" id="speakerToggle" title="Toggle spoken replies">🔊</button>
     <span>Ask about senior safety, home assessments, and care planning</span>
   </div>
   <div class="chat-messages" id="messages">
-    <div class="msg bot">Hi! I'm here to help with questions about senior safety assessments, home modifications, and care planning. You can type your question, or tap the microphone to speak instead.</div>
+    <div class="msg bot">Hi! I'm here to help with questions about senior safety assessments, home modifications, and care planning. You can type your question, or tap the microphone to speak instead. I'll read my answers out loud too — tap the speaker icon up top to turn that off.</div>
   </div>
   <div class="mic-hint" id="micHint">Voice input isn't supported in this browser — try Chrome, Edge, or Safari.</div>
   <div class="chat-input">
@@ -189,8 +203,32 @@ html
   const sendBtn = document.getElementById('sendBtn');
   const micBtn = document.getElementById('micBtn');
   const micHint = document.getElementById('micHint');
+  const speakerToggle = document.getElementById('speakerToggle');
 
   let conversationHistory = [];
+  let speechEnabled = true;
+
+  // --- Text-to-speech (Web Speech API) ---
+  function speak(text) {
+    if (!speechEnabled) return;
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel(); // stop any current speech first
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  if (!('speechSynthesis' in window)) {
+    speakerToggle.style.display = 'none';
+  } else {
+    speakerToggle.addEventListener('click', () => {
+      speechEnabled = !speechEnabled;
+      speakerToggle.textContent = speechEnabled ? '🔊' : '🔇';
+      speakerToggle.classList.toggle('muted', !speechEnabled);
+      if (!speechEnabled) window.speechSynthesis.cancel();
+    });
+  }
 
   function addMessage(text, sender) {
     const div = document.createElement('div');
@@ -198,6 +236,7 @@ html
     div.textContent = text;
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
+    if (sender === 'bot') speak(text);
     return div;
   }
 
@@ -246,6 +285,7 @@ html
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
+    // Browser doesn't support voice input — hide the mic button and show a hint
     micBtn.style.display = 'none';
     micHint.classList.add('show');
   } else {
@@ -285,6 +325,7 @@ html
       micBtn.classList.remove('listening');
       micBtn.textContent = '🎤';
       inputEl.placeholder = 'Type or tap the mic to speak...';
+      // Auto-send once speech is captured, if there's text
       if (inputEl.value.trim()) {
         sendMessage();
       }
