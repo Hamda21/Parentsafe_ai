@@ -1,4 +1,3 @@
-html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -163,6 +162,42 @@ html
     display: none;
   }
   .mic-hint.show { display: block; }
+  .checklist-box {
+    align-self: flex-start;
+    max-width: 85%;
+    background: #fff8ea;
+    border: 1px solid #eeddb0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-top: 2px;
+  }
+  .checklist-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--brand-dark);
+    margin-bottom: 8px;
+  }
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    font-size: 14px;
+    color: var(--text-dark);
+    cursor: pointer;
+    user-select: none;
+  }
+  .checklist-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--brand);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .checklist-item.checked span {
+    text-decoration: line-through;
+    color: #9aa39f;
+  }
   .speaker-toggle {
     background: none;
     border: none;
@@ -212,7 +247,7 @@ html
   function speak(text) {
     if (!speechEnabled) return;
     if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel(); // stop any current speech first
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.95;
     utterance.pitch = 1;
@@ -240,6 +275,73 @@ html
     return div;
   }
 
+  // Detects a [CHECKLIST: Title]\n- item\n- item\n[/CHECKLIST] block,
+  // renders the plain reply text plus a real interactive checklist widget.
+  function addBotReplyWithChecklist(rawText) {
+    const checklistMatch = rawText.match(/\[CHECKLIST:\s*([^\]]+)\]([\s\S]*?)\[\/CHECKLIST\]/i);
+
+    if (!checklistMatch) {
+      addMessage(rawText, 'bot');
+      return;
+    }
+
+    const title = checklistMatch[1].trim();
+    const itemsBlock = checklistMatch[2];
+    const items = itemsBlock
+      .split('\n')
+      .map(line => line.replace(/^-+\s*/, '').trim())
+      .filter(line => line.length > 0);
+
+    const beforeText = rawText.slice(0, checklistMatch.index).trim();
+    const afterText = rawText.slice(checklistMatch.index + checklistMatch[0].length).trim();
+    const spokenText = [beforeText, title, items.join('. '), afterText].filter(Boolean).join('. ');
+
+    if (beforeText) {
+      const div = document.createElement('div');
+      div.className = 'msg bot';
+      div.textContent = beforeText;
+      messagesEl.appendChild(div);
+    }
+
+    const box = document.createElement('div');
+    box.className = 'checklist-box';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'checklist-title';
+    titleEl.textContent = title;
+    box.appendChild(titleEl);
+
+    items.forEach((itemText, idx) => {
+      const row = document.createElement('label');
+      row.className = 'checklist-item';
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.addEventListener('change', () => {
+        row.classList.toggle('checked', cb.checked);
+      });
+
+      const span = document.createElement('span');
+      span.textContent = itemText;
+
+      row.appendChild(cb);
+      row.appendChild(span);
+      box.appendChild(row);
+    });
+
+    messagesEl.appendChild(box);
+
+    if (afterText) {
+      const div = document.createElement('div');
+      div.className = 'msg bot';
+      div.textContent = afterText;
+      messagesEl.appendChild(div);
+    }
+
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    speak(spokenText);
+  }
+
   async function sendMessage() {
     const text = inputEl.value.trim();
     if (!text) return;
@@ -262,7 +364,7 @@ html
       typingEl.remove();
 
       if (data.reply) {
-        addMessage(data.reply, 'bot');
+        addBotReplyWithChecklist(data.reply);
         conversationHistory.push({ role: 'assistant', content: data.reply });
       } else {
         addMessage('Sorry, something went wrong. Please try again in a moment.', 'bot');
@@ -285,7 +387,6 @@ html
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
-    // Browser doesn't support voice input — hide the mic button and show a hint
     micBtn.style.display = 'none';
     micHint.classList.add('show');
   } else {
@@ -325,7 +426,6 @@ html
       micBtn.classList.remove('listening');
       micBtn.textContent = '🎤';
       inputEl.placeholder = 'Type or tap the mic to speak...';
-      // Auto-send once speech is captured, if there's text
       if (inputEl.value.trim()) {
         sendMessage();
       }
