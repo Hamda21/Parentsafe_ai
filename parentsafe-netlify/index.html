@@ -329,6 +329,7 @@
   <div class="quick-actions">
     <button class="quick-btn" id="safetyAssessBtn">🏠 Start Home Safety Assessment</button>
     <button class="quick-btn" id="prepChecklistBtn">🎒 Emergency Preparedness Checklist</button>
+    <button class="quick-btn" id="dailyCareBtn">📋 Daily Care Checklist</button>
   </div>
   <div class="chat-input">
     <button class="mic-btn" id="micBtn" title="Speak your question">🎤</button>
@@ -376,6 +377,7 @@
   const speakerToggle = document.getElementById('speakerToggle');
   const safetyAssessBtn = document.getElementById('safetyAssessBtn');
   const prepChecklistBtn = document.getElementById('prepChecklistBtn');
+  const dailyCareBtn = document.getElementById('dailyCareBtn');
   const feedbackOpenBtn = document.getElementById('feedbackOpenBtn');
   const feedbackModal = document.getElementById('feedbackModal');
   const feedbackCancelBtn = document.getElementById('feedbackCancelBtn');
@@ -590,6 +592,11 @@
 
   prepChecklistBtn.addEventListener('click', () => {
     inputEl.value = "Can you give me an emergency preparedness checklist for my parent's home?";
+    sendMessage();
+  });
+
+  dailyCareBtn.addEventListener('click', () => {
+    inputEl.value = "Can you give me a daily care checklist for my parent?";
     sendMessage();
   });
 
