@@ -231,16 +231,55 @@
   .quick-btn:hover {
     background: #eaf3f0;
   }
-  .feedback-btn {
-    background: none;
-    border: none;
+  .emergency-btn {
+    background: #c0392b;
+    border: 1px solid #a5301f;
     color: #fff;
-    opacity: 0.85;
-    cursor: pointer;
     font-size: 13px;
-    float: right;
-    margin-top: -1px;
-    margin-right: 8px;
+    font-weight: 700;
+    padding: 9px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .emergency-btn:hover {
+    background: #a5301f;
+  }
+  .disclaimer-text {
+    font-size: 10.5px;
+    color: #9aa39f;
+    text-align: center;
+    padding: 6px 16px 2px;
+    line-height: 1.4;
+  }
+  .header-top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .feedback-standalone-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px 12px 0;
+  }
+  .feedback-standalone-btn {
+    background: none;
+    border: 1px solid #d5dcda;
+    color: var(--brand-dark);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 14px;
+    cursor: pointer;
+  }
+  .feedback-standalone-btn:hover {
+    background: #f0f4f3;
   }
   .modal-overlay {
     display: none;
@@ -317,20 +356,28 @@
 
 <div class="chat-container">
   <div class="chat-header">
-    ParentSafe AI Assistant
-    <button class="speaker-toggle" id="speakerToggle" title="Toggle spoken replies">🔊</button>
-    <button class="feedback-btn" id="feedbackOpenBtn" title="Send feedback">💬 Feedback</button>
-    <span>Ask about senior safety, home assessments, and care planning</span>
+    <div class="header-top-row">
+      <span class="header-title">ParentSafe AI Assistant</span>
+      <button class="speaker-toggle" id="speakerToggle" title="Toggle spoken replies">🔊</button>
+    </div>
+    <span>Ask about senior home safety, fall prevention, everyday care, and emergency preparedness.</span>
+  </div>
+  <div class="feedback-standalone-row">
+    <button class="feedback-standalone-btn" id="feedbackOpenBtn">Feedback</button>
   </div>
   <div class="chat-messages" id="messages">
-    <div class="msg bot">Hi! I'm here to help with questions about senior safety assessments, home modifications, and care planning. You can type your question, or tap the microphone to speak instead. I'll read my answers out loud too — tap the speaker icon up top to turn that off.</div>
+    <div class="msg bot">Hi! I'm here to help you make an aging loved one's home safer and provide general caregiving guidance. Type your question or tap the microphone to speak. I can also read my answers aloud.</div>
   </div>
   <div class="mic-hint" id="micHint">Voice input isn't supported in this browser — try Chrome, Edge, or Safari.</div>
   <div class="quick-actions">
-    <button class="quick-btn" id="safetyAssessBtn">🏠 Start Home Safety Assessment</button>
-    <button class="quick-btn" id="prepChecklistBtn">🎒 Emergency Preparedness Checklist</button>
-    <button class="quick-btn" id="dailyCareBtn">📋 Daily Care Checklist</button>
+    <button class="quick-btn" id="safetyAssessBtn">Start Home Safety Assessment</button>
+    <button class="quick-btn" id="dailyCareBtn">Daily Care Checklist</button>
+    <button class="quick-btn" id="prepChecklistBtn">Emergency Preparedness Checklist</button>
   </div>
+  <div class="quick-actions" style="padding-top:6px;">
+    <button class="emergency-btn" id="emergencyBtn">Need Help Right Now?</button>
+  </div>
+  <div class="disclaimer-text">ParentSafe provides general educational and safety information, not medical diagnosis or treatment. For a life-threatening emergency, call 911. Please don't share sensitive medical or financial information.</div>
   <div class="chat-input">
     <button class="mic-btn" id="micBtn" title="Speak your question">🎤</button>
     <input type="text" id="userInput" placeholder="Type or tap the mic to speak..." autocomplete="off">
@@ -378,6 +425,7 @@
   const safetyAssessBtn = document.getElementById('safetyAssessBtn');
   const prepChecklistBtn = document.getElementById('prepChecklistBtn');
   const dailyCareBtn = document.getElementById('dailyCareBtn');
+  const emergencyBtn = document.getElementById('emergencyBtn');
   const feedbackOpenBtn = document.getElementById('feedbackOpenBtn');
   const feedbackModal = document.getElementById('feedbackModal');
   const feedbackCancelBtn = document.getElementById('feedbackCancelBtn');
@@ -597,6 +645,11 @@
 
   dailyCareBtn.addEventListener('click', () => {
     inputEl.value = "Can you give me a daily care checklist for my parent?";
+    sendMessage();
+  });
+
+  emergencyBtn.addEventListener('click', () => {
+    inputEl.value = "I need help right now, this might be an emergency.";
     sendMessage();
   });
 
