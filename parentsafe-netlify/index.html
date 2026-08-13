@@ -328,6 +328,7 @@
   <div class="mic-hint" id="micHint">Voice input isn't supported in this browser — try Chrome, Edge, or Safari.</div>
   <div class="quick-actions">
     <button class="quick-btn" id="safetyAssessBtn">🏠 Start Home Safety Assessment</button>
+    <button class="quick-btn" id="prepChecklistBtn">🎒 Emergency Preparedness Checklist</button>
   </div>
   <div class="chat-input">
     <button class="mic-btn" id="micBtn" title="Speak your question">🎤</button>
@@ -338,6 +339,8 @@
 
 <!-- Hidden static form so Netlify detects it at build time -->
 <form name="feedback" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="text" name="name" />
+  <input type="email" name="email" />
   <input type="text" name="feedback" />
   <input type="text" name="bot-field" />
 </form>
@@ -347,6 +350,8 @@
     <div id="feedbackFormWrap">
       <h3>Send Feedback</h3>
       <p class="modal-note">How can we make ParentSafe better? Please don't include medical, financial, or other sensitive personal information.</p>
+      <input type="text" id="feedbackName" placeholder="Your name (optional)" style="width:100%; margin-bottom:8px; padding:10px; border:1px solid #d5dcda; border-radius:8px; font-size:14px; font-family:inherit; box-sizing:border-box;">
+      <input type="email" id="feedbackEmail" placeholder="Your email (optional, if you'd like a reply)" style="width:100%; margin-bottom:8px; padding:10px; border:1px solid #d5dcda; border-radius:8px; font-size:14px; font-family:inherit; box-sizing:border-box;">
       <textarea id="feedbackText" placeholder="Tell us what's working, what's confusing, or what you'd like to see..."></textarea>
       <div class="modal-actions">
         <button type="button" class="modal-cancel" id="feedbackCancelBtn">Cancel</button>
@@ -370,12 +375,15 @@
   const micHint = document.getElementById('micHint');
   const speakerToggle = document.getElementById('speakerToggle');
   const safetyAssessBtn = document.getElementById('safetyAssessBtn');
+  const prepChecklistBtn = document.getElementById('prepChecklistBtn');
   const feedbackOpenBtn = document.getElementById('feedbackOpenBtn');
   const feedbackModal = document.getElementById('feedbackModal');
   const feedbackCancelBtn = document.getElementById('feedbackCancelBtn');
   const feedbackCloseBtn = document.getElementById('feedbackCloseBtn');
   const feedbackSubmitBtn = document.getElementById('feedbackSubmitBtn');
   const feedbackText = document.getElementById('feedbackText');
+  const feedbackName = document.getElementById('feedbackName');
+  const feedbackEmail = document.getElementById('feedbackEmail');
   const feedbackFormWrap = document.getElementById('feedbackFormWrap');
   const feedbackThanks = document.getElementById('feedbackThanks');
 
@@ -383,6 +391,8 @@
     feedbackFormWrap.style.display = 'block';
     feedbackThanks.style.display = 'none';
     feedbackText.value = '';
+    feedbackName.value = '';
+    feedbackEmail.value = '';
     feedbackModal.classList.add('show');
   }
   function closeFeedbackModal() {
@@ -413,7 +423,12 @@
       await fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: encodeFormData({ 'form-name': 'feedback', feedback: message })
+        body: encodeFormData({
+          'form-name': 'feedback',
+          name: feedbackName.value.trim(),
+          email: feedbackEmail.value.trim(),
+          feedback: message
+        })
       });
       feedbackFormWrap.style.display = 'none';
       feedbackThanks.style.display = 'block';
@@ -570,6 +585,11 @@
 
   safetyAssessBtn.addEventListener('click', () => {
     inputEl.value = "I'd like to start a home safety assessment for my parent's home.";
+    sendMessage();
+  });
+
+  prepChecklistBtn.addEventListener('click', () => {
+    inputEl.value = "Can you give me an emergency preparedness checklist for my parent's home?";
     sendMessage();
   });
 
