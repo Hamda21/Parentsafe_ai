@@ -287,10 +287,14 @@
   }
   .disclaimer-text {
     font-size: 12px;
-    color: #5c6b65;
+    color: #4a3418;
     text-align: center;
-    padding: 12px 16px 4px;
+    padding: 10px 14px;
     line-height: 1.5;
+    background: #fdf6ea;
+    border: 1px solid #ecdcb8;
+    border-radius: 10px;
+    margin: 10px 12px 0;
   }
   .header-top-row {
     display: flex;
@@ -414,6 +418,39 @@
     max-height: 80vh;
     overflow-y: auto;
   }
+  .streak-badge {
+    display: inline-block;
+    background: #fff0d8;
+    color: #8a5a15;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+  .onboarding-hint {
+    background: #eef6f3;
+    border: 1px solid #cfe3db;
+    color: var(--brand-dark);
+    font-size: 12px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    margin: 4px 12px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .onboarding-hint button {
+    background: none;
+    border: none;
+    color: var(--brand-dark);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0 2px;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -440,6 +477,10 @@
 Type your question or tap the microphone to speak. I can also read my answers aloud.</div>
   </div>
   <div class="mic-hint" id="micHint">Voice input isn't supported in this browser — try Chrome, Edge, or Safari.</div>
+  <div class="onboarding-hint" id="onboardingHint">
+    <span>Tip: the buttons below are shortcuts — tap one to get started instantly.</span>
+    <button type="button" id="onboardingDismissBtn">Got it</button>
+  </div>
   <div class="quick-actions" style="padding-top:12px;">
     <button class="primary-btn" id="safetyAssessBtn">Start Home Safety Assessment</button>
   </div>
@@ -539,6 +580,26 @@ Type your question or tap the microphone to speak. I can also read my answers al
   const resourcesBtn = document.getElementById('resourcesBtn');
   const resourcesModal = document.getElementById('resourcesModal');
   const resourcesCloseBtn = document.getElementById('resourcesCloseBtn');
+  const onboardingHint = document.getElementById('onboardingHint');
+  const onboardingDismissBtn = document.getElementById('onboardingDismissBtn');
+
+  // --- First-time onboarding hint ---
+  try {
+    if (localStorage.getItem('parentsafe_seen_hint')) {
+      onboardingHint.style.display = 'none';
+    }
+  } catch (err) {
+    // localStorage unavailable; just leave the hint showing
+  }
+  onboardingDismissBtn.addEventListener('click', () => {
+    onboardingHint.style.display = 'none';
+    try {
+      localStorage.setItem('parentsafe_seen_hint', '1');
+    } catch (err) {
+      // ignore if storage is unavailable
+    }
+  });
+
   const feedbackOpenBtn = document.getElementById('feedbackOpenBtn');
   const feedbackModal = document.getElementById('feedbackModal');
   const feedbackCancelBtn = document.getElementById('feedbackCancelBtn');
@@ -640,6 +701,37 @@ Type your question or tap the microphone to speak. I can also read my answers al
     return div;
   }
 
+  function todayKey() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function getStreakData() {
+    try {
+      const raw = localStorage.getItem('parentsafe_daily_streak');
+      return raw ? JSON.parse(raw) : { count: 0, lastCompletedDate: null };
+    } catch (err) {
+      return { count: 0, lastCompletedDate: null };
+    }
+  }
+
+  function recordDailyChecklistCompletion() {
+    const data = getStreakData();
+    const today = todayKey();
+    if (data.lastCompletedDate === today) return data;
+
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    data.count = data.lastCompletedDate === yesterday ? data.count + 1 : 1;
+    data.lastCompletedDate = today;
+    try {
+      localStorage.setItem('parentsafe_daily_streak', JSON.stringify(data));
+    } catch (err) {
+      // ignore if storage is unavailable
+    }
+    return data;
+  }
+
+  // Detects a [CHECKLIST: Title]\n- item\n- item\n[/CHECKLIST] block,
+  // renders the plain reply text plus a real interactive checklist widget.
   function addBotReplyWithChecklist(rawText) {
     const checklistMatch = rawText.match(/\[CHECKLIST:\s*([^\]]+)\]([\s\S]*?)\[\/CHECKLIST\]/i);
 
@@ -674,6 +766,18 @@ Type your question or tap the microphone to speak. I can also read my answers al
     titleEl.textContent = title;
     box.appendChild(titleEl);
 
+    const isDailyChecklist = /^daily care checklist$/i.test(title.trim());
+    let streakBadge = null;
+    if (isDailyChecklist) {
+      streakBadge = document.createElement('span');
+      streakBadge.className = 'streak-badge';
+      const existing = getStreakData();
+      streakBadge.textContent = existing.count > 0 ? existing.count + ' day streak' : 'Start your streak';
+      titleEl.appendChild(streakBadge);
+    }
+
+    const checkboxes = [];
+
     items.forEach((itemText, idx) => {
       const row = document.createElement('label');
       row.className = 'checklist-item';
@@ -682,7 +786,18 @@ Type your question or tap the microphone to speak. I can also read my answers al
       cb.type = 'checkbox';
       cb.addEventListener('change', () => {
         row.classList.toggle('checked', cb.checked);
+        if (isDailyChecklist && streakBadge) {
+          const allChecked = checkboxes.every(box => box.checked);
+          if (allChecked) {
+            const updated = recordDailyChecklistCompletion();
+            streakBadge.textContent = updated.count + ' day streak';
+          } else {
+            const existing = getStreakData();
+            streakBadge.textContent = existing.count > 0 ? existing.count + ' day streak' : 'Start your streak';
+          }
+        }
       });
+      checkboxes.push(cb);
 
       const span = document.createElement('span');
       span.textContent = itemText;
@@ -843,3 +958,5 @@ Type your question or tap the microphone to speak. I can also read my answers al
 
 </body>
 </html>
+ 
+   
