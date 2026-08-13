@@ -231,10 +231,39 @@
   .quick-btn:hover {
     background: #eaf3f0;
   }
-  .emergency-btn {
-    background: #c0392b;
-    border: 1px solid #a5301f;
+  .primary-btn {
+    background: var(--brand);
+    border: none;
     color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 13px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .primary-btn:hover {
+    background: var(--brand-dark);
+  }
+  .secondary-btn {
+    background: none;
+    border: none;
+    color: var(--brand-dark);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 6px 10px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .secondary-btn:hover {
+    color: var(--brand);
+  }
+  .support-btn {
+    background: #fff6e9;
+    border: 1px solid #d9a758;
+    color: #8a5a15;
     font-size: 13px;
     font-weight: 700;
     padding: 9px 16px;
@@ -244,15 +273,24 @@
     width: 100%;
     margin-top: 4px;
   }
-  .emergency-btn:hover {
-    background: #a5301f;
+  .support-btn:hover {
+    background: #fbeed3;
+  }
+  .intro-list {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .intro-list li {
+    margin-bottom: 2px;
   }
   .disclaimer-text {
-    font-size: 11.5px;
+    font-size: 12px;
     color: #5c6b65;
     text-align: center;
-    padding: 8px 16px 4px;
-    line-height: 1.4;
+    padding: 12px 16px 4px;
+    line-height: 1.5;
   }
   .header-top-row {
     display: flex;
@@ -392,18 +430,27 @@
     <button class="feedback-standalone-btn" id="feedbackOpenBtn">Feedback</button>
   </div>
   <div class="chat-messages" id="messages">
-    <div class="msg bot">Hi! I'm here to help you make an aging loved one's home safer and provide general caregiving guidance. Type your question or tap the microphone to speak. I can also read my answers aloud.</div>
+    <div class="msg bot">Hi! I'm here to help you make an aging loved one's home safer and provide general caregiving guidance. I can help with:
+<ul class="intro-list">
+<li>Home safety and fall prevention</li>
+<li>Everyday care routines</li>
+<li>Medication questions (general information only)</li>
+<li>Emergency preparedness</li>
+</ul>
+Type your question or tap the microphone to speak. I can also read my answers aloud.</div>
   </div>
   <div class="mic-hint" id="micHint">Voice input isn't supported in this browser — try Chrome, Edge, or Safari.</div>
-  <div class="quick-actions">
-    <button class="quick-btn" id="safetyAssessBtn">Start Home Safety Assessment</button>
-    <button class="quick-btn" id="dailyCareBtn">Daily Care Checklist</button>
-    <button class="quick-btn" id="prepChecklistBtn">Emergency Preparedness Checklist</button>
-    <button class="quick-btn" id="learningCenterBtn">Learning Center</button>
-    <button class="quick-btn" id="resourcesBtn">Trusted Resources</button>
+  <div class="quick-actions" style="padding-top:12px;">
+    <button class="primary-btn" id="safetyAssessBtn">Start Home Safety Assessment</button>
   </div>
-  <div class="quick-actions" style="padding-top:6px;">
-    <button class="emergency-btn" id="emergencyBtn">Need Help Right Now?</button>
+  <div class="quick-actions" style="padding-top:8px; justify-content:center;">
+    <button class="secondary-btn" id="dailyCareBtn">Daily Care Checklist</button>
+    <button class="secondary-btn" id="prepChecklistBtn">Emergency Preparedness Checklist</button>
+    <button class="secondary-btn" id="learningCenterBtn">Learning Center</button>
+    <button class="secondary-btn" id="resourcesBtn">Trusted Resources</button>
+  </div>
+  <div class="quick-actions" style="padding-top:2px;">
+    <button class="support-btn" id="emergencyBtn">Get Support</button>
   </div>
   <div class="disclaimer-text">ParentSafe provides general educational and safety information, not medical diagnosis or treatment. For a life-threatening emergency, call 911. Please don't share sensitive medical or financial information.</div>
   <div class="chat-input">
@@ -715,7 +762,7 @@
   });
 
   emergencyBtn.addEventListener('click', () => {
-    inputEl.value = "I need help right now, this might be an emergency.";
+    inputEl.value = "I need some guidance right now — I'm not sure what to do.";
     sendMessage();
   });
 
