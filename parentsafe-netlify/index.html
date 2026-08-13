@@ -350,6 +350,32 @@
     text-align: center;
     padding: 10px 0;
   }
+  .resource-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #eef1f0;
+  }
+  .resource-item:last-child {
+    border-bottom: none;
+  }
+  .resource-item a {
+    color: var(--brand);
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .resource-item a:hover {
+    text-decoration: underline;
+  }
+  .resource-item p {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    color: #6b7570;
+    line-height: 1.4;
+  }
+  .resources-modal-box {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
 </style>
 </head>
 <body>
@@ -373,6 +399,8 @@
     <button class="quick-btn" id="safetyAssessBtn">Start Home Safety Assessment</button>
     <button class="quick-btn" id="dailyCareBtn">Daily Care Checklist</button>
     <button class="quick-btn" id="prepChecklistBtn">Emergency Preparedness Checklist</button>
+    <button class="quick-btn" id="learningCenterBtn">Learning Center</button>
+    <button class="quick-btn" id="resourcesBtn">Trusted Resources</button>
   </div>
   <div class="quick-actions" style="padding-top:6px;">
     <button class="emergency-btn" id="emergencyBtn">Need Help Right Now?</button>
@@ -382,6 +410,40 @@
     <button class="mic-btn" id="micBtn" title="Speak your question">🎤</button>
     <input type="text" id="userInput" placeholder="Type or tap the mic to speak..." autocomplete="off">
     <button class="send-btn" id="sendBtn">Send</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="resourcesModal">
+  <div class="modal-box resources-modal-box">
+    <h3>Trusted Resources</h3>
+    <p class="modal-note">ParentSafe complements these organizations rather than replacing them. Reach out directly for professional guidance and local support.</p>
+    <div class="resource-item">
+      <a href="https://www.ncoa.org/page/falls-prevention/" target="_blank" rel="noopener">National Council on Aging — Falls Prevention</a>
+      <p>Evidence-based fall prevention programs and a free Falls Free CheckUp.</p>
+    </div>
+    <div class="resource-item">
+      <a href="https://www.cdc.gov/steadi/patient-resources/index.html" target="_blank" rel="noopener">CDC STEADI — Older Adult Fall Prevention</a>
+      <p>Government resources and tools for preventing falls in older adults.</p>
+    </div>
+    <div class="resource-item">
+      <a href="https://eldercare.acl.gov" target="_blank" rel="noopener">Eldercare Locator</a>
+      <p>A nationwide service connecting families with local aging services and agencies.</p>
+    </div>
+    <div class="resource-item">
+      <a href="https://www.alz.org/help-support/resources/helpline" target="_blank" rel="noopener">Alzheimer's Association 24/7 Helpline</a>
+      <p>Free, confidential support for memory loss, dementia, and caregiving. Call 800-272-3900 anytime.</p>
+    </div>
+    <div class="resource-item">
+      <a href="https://www.nia.nih.gov" target="_blank" rel="noopener">National Institute on Aging</a>
+      <p>Government research and health information on aging and caregiving.</p>
+    </div>
+    <div class="resource-item">
+      <a href="https://www.aarp.org/caregiving/" target="_blank" rel="noopener">AARP Caregiving Resource Center</a>
+      <p>Practical guides and community support for family caregivers.</p>
+    </div>
+    <div class="modal-actions" style="justify-content:center; margin-top:6px;">
+      <button type="button" class="modal-cancel" id="resourcesCloseBtn">Close</button>
+    </div>
   </div>
 </div>
 
@@ -426,6 +488,10 @@
   const prepChecklistBtn = document.getElementById('prepChecklistBtn');
   const dailyCareBtn = document.getElementById('dailyCareBtn');
   const emergencyBtn = document.getElementById('emergencyBtn');
+  const learningCenterBtn = document.getElementById('learningCenterBtn');
+  const resourcesBtn = document.getElementById('resourcesBtn');
+  const resourcesModal = document.getElementById('resourcesModal');
+  const resourcesCloseBtn = document.getElementById('resourcesCloseBtn');
   const feedbackOpenBtn = document.getElementById('feedbackOpenBtn');
   const feedbackModal = document.getElementById('feedbackModal');
   const feedbackCancelBtn = document.getElementById('feedbackCancelBtn');
@@ -651,6 +717,21 @@
   emergencyBtn.addEventListener('click', () => {
     inputEl.value = "I need help right now, this might be an emergency.";
     sendMessage();
+  });
+
+  learningCenterBtn.addEventListener('click', () => {
+    inputEl.value = "What topics can I learn about in the learning center?";
+    sendMessage();
+  });
+
+  resourcesBtn.addEventListener('click', () => {
+    resourcesModal.classList.add('show');
+  });
+  resourcesCloseBtn.addEventListener('click', () => {
+    resourcesModal.classList.remove('show');
+  });
+  resourcesModal.addEventListener('click', (e) => {
+    if (e.target === resourcesModal) resourcesModal.classList.remove('show');
   });
 
   // --- Voice input (Web Speech API) ---
