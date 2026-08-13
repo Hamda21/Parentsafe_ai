@@ -211,6 +211,26 @@
   .speaker-toggle.muted {
     opacity: 0.5;
   }
+  .quick-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px 0;
+    flex-wrap: wrap;
+  }
+  .quick-btn {
+    background: #fff;
+    border: 1px solid var(--brand);
+    color: var(--brand);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .quick-btn:hover {
+    background: #eaf3f0;
+  }
 </style>
 </head>
 <body>
@@ -225,6 +245,9 @@
     <div class="msg bot">Hi! I'm here to help with questions about senior safety assessments, home modifications, and care planning. You can type your question, or tap the microphone to speak instead. I'll read my answers out loud too — tap the speaker icon up top to turn that off.</div>
   </div>
   <div class="mic-hint" id="micHint">Voice input isn't supported in this browser — try Chrome, Edge, or Safari.</div>
+  <div class="quick-actions">
+    <button class="quick-btn" id="safetyAssessBtn">🏠 Start Home Safety Assessment</button>
+  </div>
   <div class="chat-input">
     <button class="mic-btn" id="micBtn" title="Speak your question">🎤</button>
     <input type="text" id="userInput" placeholder="Type or tap the mic to speak..." autocomplete="off">
@@ -239,6 +262,7 @@
   const micBtn = document.getElementById('micBtn');
   const micHint = document.getElementById('micHint');
   const speakerToggle = document.getElementById('speakerToggle');
+  const safetyAssessBtn = document.getElementById('safetyAssessBtn');
 
   let conversationHistory = [];
   let speechEnabled = true;
@@ -381,6 +405,11 @@
   sendBtn.addEventListener('click', sendMessage);
   inputEl.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') sendMessage();
+  });
+
+  safetyAssessBtn.addEventListener('click', () => {
+    inputEl.value = "I'd like to start a home safety assessment for my parent's home.";
+    sendMessage();
   });
 
   // --- Voice input (Web Speech API) ---
